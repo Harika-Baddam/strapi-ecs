@@ -25,22 +25,27 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: us-east-2
+        
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Build and Push Docker image
+    - name: Build and push Docker image
+      env:
+          IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/strapi-app
       run: |
-       docker build -t hrk-strapi-app .
-       docker tag  607700977843.dkr.ecr.us-east-2.amazonaws.com/hrk-strap-app:latest
-       docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/hrk-strap-app:latest
+          docker build -t $IMAGE_NAME:v4 .
+          docker push $IMAGE_NAME:v4
+          echo "IMAGE_URL=$IMAGE_NAME:v4" >> $GITHUB_ENV
 
     - name: Update Terraform
       run: |
         terraform init
-        terraform plan -var="image_tag=$IMAGE_TAG"
-        terraform apply -auto-approve -var="image_tag=$IMAGE_TAG"
+    - name: Terraform Plan
+      run: terraform plan -var="image=baddamharika/strapi-app:latest"
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var="image=baddamharika/strapi-app:latest"
 
     - name: Register updated ECS task definition
       run: |
