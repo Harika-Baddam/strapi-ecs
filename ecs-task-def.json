@@ -1,0 +1,12 @@
+{
+  "family": "strapi-task",
+  "containerDefinitions": [
+    {
+      "name": "strapi",
+      "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/hrk-strapi-app:latest",
+      "memory": 512,
+      "cpu": 256,
+      "essential": true
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+name: Deploy Strapi to ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-2
+      ECR_REPOSITORY: strapi-app
+      ECS_CLUSTER: strapi-cluster
+      ECS_SERVICE: strapi-service
+      TASK_DEFINITION: strapi-task-def.json
+      EXECUTION_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and Push Docker image
+      run: |
+       docker build -t hrk-strapi-app .
+       docker tag  607700977843.dkr.ecr.us-east-2.amazonaws.com/hrk-strap-app:latest
+       docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/hrk-strap-app:latest
+
+    - name: Update Terraform
+      run: |
+        terraform init
+        terraform plan -var="image_tag=$IMAGE_TAG"
+        terraform apply -auto-approve -var="image_tag=$IMAGE_TAG"
+
+    - name: Register updated ECS task definition
+      run: |
+        aws ecs register-task-definition \
+          --cli-input-json file://${{ env.TASK_DEFINITION }} \
+          --execution-role-arn ${{ env.EXECUTION_ROLE_ARN }}
+
+    - name: Deploy to ECS service
+      run: |
+        aws ecs update-service \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --service ${{ env.ECS_SERVICE }} \
+          --force-new-deployment
