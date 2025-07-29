@@ -21,6 +21,6 @@ variable "private_subnets" {
 }
 
 variable "ecs_security_group" {
-  type        = string
   description = "Security Group ID for ECS tasks"
+  type        = string
 }
