@@ -38,9 +38,12 @@ jobs:
           docker push $IMAGE_NAME:v4
           echo "IMAGE_URL=$IMAGE_NAME:v4" >> $GITHUB_ENV
 
-    - name: Update Terraform
-      run: |
-        terraform init
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.6.0
+    - name: Terraform Init
+      run: terraform init
     - name: Terraform Plan
       run: terraform plan -var="image=baddamharika/strapi-app:latest"
 
