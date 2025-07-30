@@ -59,6 +59,6 @@ jobs:
     - name: Deploy to ECS service
       run: |
         aws ecs update-service \
-          --cluster ${{ ecs.ECS_CLUSTER }} \
-          --service ${{ ecs.ECS_SERVICE }} \
+          --cluster strpi-cluster-hrk \
+          --service strapi-service \
           --force-new-deployment
