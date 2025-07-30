@@ -9,13 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: us-east-2
-      ECR_REPOSITORY: strapi-app
-      ECS_CLUSTER: strapi-cluster
-      ECS_SERVICE: strapi-service
-      TASK_DEFINITION: strapi-task-def.json
-      EXECUTION_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole
-
+     AWS_REGION: us-east-2
+     IMAGE_NAME: strapi-app
+     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -49,16 +45,3 @@ jobs:
 
     - name: Terraform Apply
       run: terraform apply -auto-approve -var="image=baddamharika/strapi-app:latest"
-
-    - name: Register updated ECS task definition
-      run: |
-        aws ecs register-task-definition \
-          --cli-input-json file://${{ ecs.TASK_DEFINITION }} \
-          --execution-role-arn ${{ ecs.EXECUTION_ROLE_ARN }}
-
-    - name: Deploy to ECS service
-      run: |
-        aws ecs update-service \
-          --cluster strpi-cluster-hrk \
-          --service strapi-service \
-          --force-new-deployment
