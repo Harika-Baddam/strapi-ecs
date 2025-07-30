@@ -45,3 +45,10 @@ jobs:
 
     - name: Terraform Apply
       run: terraform apply -auto-approve -var="image=baddamharika/strapi-app:latest"
+      
+    - name: Deploy to ECS service
+      run: |
+           aws ecs update-service \
+           --cluster ${{ env.ECS_CLUSTER }} \
+           --service ${{ env.ECS_SERVICE }} \
+           --force-new-deployment
