@@ -53,12 +53,12 @@ jobs:
     - name: Register updated ECS task definition
       run: |
         aws ecs register-task-definition \
-          --cli-input-json file://${{ env.TASK_DEFINITION }} \
-          --execution-role-arn ${{ env.EXECUTION_ROLE_ARN }}
+          --cli-input-json file://${{ ecs.TASK_DEFINITION }} \
+          --execution-role-arn ${{ ecs.EXECUTION_ROLE_ARN }}
 
     - name: Deploy to ECS service
       run: |
         aws ecs update-service \
-          --cluster ${{ env.ECS_CLUSTER }} \
-          --service ${{ env.ECS_SERVICE }} \
+          --cluster ${{ ecs.ECS_CLUSTER }} \
+          --service ${{ ecs.ECS_SERVICE }} \
           --force-new-deployment
